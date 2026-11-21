@@ -21,6 +21,10 @@ const q = n => Math.max(0, Math.min(20, parseInt(form[n].value, 10) || 0));
 const subtotal = () => PRICE.Petite * q("qP") + PRICE.Grande * q("qG");
 const deliveryFee = () => (subtotal() === 0 || subtotal() >= FREE_DELIVERY_FROM) ? 0 : DELIVERY_FEE;
 const total = () => subtotal() + deliveryFee();
+const orderItems = () => [
+  q("qP") ? { product: "Classic Tiramisu", size: "Petite", qty: q("qP"), price: PRICE.Petite } : null,
+  q("qG") ? { product: "Classic Tiramisu", size: "Grande", qty: q("qG"), price: PRICE.Grande } : null
+].filter(Boolean);
 const rows = [...document.querySelectorAll(".srow")];
 const prev = { Petite: $("prevP"), Grande: $("prevG") };
 const show = size => {
@@ -63,7 +67,7 @@ form.addEventListener("submit", async e => {
   const row = {
     order_no: orderNo, name: form.name.value.trim(), email: form.email.value.trim(),
     phone: form.phone.value.trim(), address: form.addr.value.trim(), petite_qty: q("qP"), grande_qty: q("qG"), delivery_date: form.date.value, delivery_time: form.time.value || null,
-    payment: form.pay.value, notes: form.notes.value.trim() || null, total: total(), delivery_charged: deliveryFee(), status: "new"
+    payment: form.pay.value, notes: form.notes.value.trim() || null, total: total(), delivery_charged: deliveryFee(), status: "new", items: orderItems()
   };
   const btn = $("submitBtn"); btn.disabled = true; btn.textContent = "Sending…";
   try {
