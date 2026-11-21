@@ -107,6 +107,11 @@
       <div class="f full"><label for="addr">Delivery address and location</label><textarea id="addr" name="addr" autocomplete="street-address" required></textarea></div>
       <div class="f full"><label for="notes">Special delivery instructions (optional)</label><textarea id="notes" name="notes"></textarea></div>
       <div class="hp" aria-hidden="true"><label>Leave empty <input name="website" tabindex="-1" autocomplete="off"></label></div>
+      <div class="lines">
+        <div class="line"><span>Subtotal</span><span id="subtotal">PKR 1,700</span></div>
+        <div class="line"><span>Delivery</span><span id="delivery">PKR 250</span></div>
+        <p class="hint" id="hint"></p>
+      </div>
       <div class="total"><span>Total</span><span id="total" aria-live="polite">PKR 1,700</span></div>
       <p class="err" id="err" role="alert"></p>
       <div class="f full"><button class="btn" type="submit" id="submitBtn">Send pre-order</button></div>

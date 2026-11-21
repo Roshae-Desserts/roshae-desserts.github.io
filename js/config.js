@@ -8,3 +8,5 @@ const EMAILJS_PUBLIC_KEY = "zTugv9PixZlEamDP1";
 const MIN_DAYS_NOTICE = 1; // earliest delivery = today + this many days
 // -----------------------------------------------------------------------
 const WHATSAPP_NUMBER = "923418203354";
+const DELIVERY_FEE = 250;
+const FREE_DELIVERY_FROM = 10000;

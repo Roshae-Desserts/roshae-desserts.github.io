@@ -18,7 +18,9 @@ $("date").min = $("date").value = d.toISOString().slice(0, 10);
 
 // live total
 const q = n => Math.max(0, Math.min(20, parseInt(form[n].value, 10) || 0));
-const total = () => PRICE.Petite * q("qP") + PRICE.Grande * q("qG");
+const subtotal = () => PRICE.Petite * q("qP") + PRICE.Grande * q("qG");
+const deliveryFee = () => (subtotal() === 0 || subtotal() >= FREE_DELIVERY_FROM) ? 0 : DELIVERY_FEE;
+const total = () => subtotal() + deliveryFee();
 const rows = [...document.querySelectorAll(".srow")];
 const prev = { Petite: $("prevP"), Grande: $("prevG") };
 const show = size => {
@@ -26,6 +28,10 @@ const show = size => {
   rows.forEach(r => r.classList.toggle("active", r.dataset.size === size));
 };
 const refresh = () => {
+  const s = subtotal(), fee = deliveryFee();
+  $("subtotal").textContent = fmt(s);
+  $("delivery").innerHTML = s === 0 ? "–" : fee === 0 ? "<s>" + fmt(DELIVERY_FEE) + "</s><strong>Free</strong>" : fmt(fee);
+  $("hint").textContent = s > 0 && s < FREE_DELIVERY_FROM ? "Add " + fmt(FREE_DELIVERY_FROM - s) + " more for free delivery" : "";
   $("total").textContent = fmt(total());
   rows.forEach(r => r.classList.toggle("has", q(r.dataset.size === "Petite" ? "qP" : "qG") > 0));
 };
@@ -57,7 +63,7 @@ form.addEventListener("submit", async e => {
   const row = {
     order_no: orderNo, name: form.name.value.trim(), email: form.email.value.trim(),
     phone: form.phone.value.trim(), address: form.addr.value.trim(), petite_qty: q("qP"), grande_qty: q("qG"), delivery_date: form.date.value, delivery_time: form.time.value || null,
-    payment: form.pay.value, notes: form.notes.value.trim() || null, total: total(), status: "new"
+    payment: form.pay.value, notes: form.notes.value.trim() || null, total: total(), delivery_charged: deliveryFee(), status: "new"
   };
   const btn = $("submitBtn"); btn.disabled = true; btn.textContent = "Sending…";
   try {
@@ -95,7 +101,7 @@ function notify(r) {
     body: JSON.stringify({
       service_id: EMAILJS_SERVICE_ID, template_id: EMAILJS_TEMPLATE_ID, user_id: EMAILJS_PUBLIC_KEY,
       template_params: {
-        order_no: r.order_no, items, total: fmt(r.total), name: r.name, email: r.email, phone: r.phone,
+        order_no: r.order_no, items, total: fmt(r.total), delivery_fee: r.delivery_charged ? fmt(r.delivery_charged) : "Free", name: r.name, email: r.email, phone: r.phone,
         address: r.address, delivery: r.delivery_date + (r.delivery_time ? " at " + r.delivery_time : ""),
         payment: r.payment, notes: r.notes || "None"
       }
@@ -105,7 +111,7 @@ function notify(r) {
 
 function showDone(r) {
   const text = [
-    "Order " + r.order_no, r.petite_qty ? r.petite_qty + " × Classic Tiramisu (Petite)" : "", r.grande_qty ? r.grande_qty + " × Classic Tiramisu (Grande)" : "", "Total: " + fmt(r.total),
+    "Order " + r.order_no, r.petite_qty ? r.petite_qty + " × Classic Tiramisu (Petite)" : "", r.grande_qty ? r.grande_qty + " × Classic Tiramisu (Grande)" : "", "Delivery fee: " + (r.delivery_charged ? fmt(r.delivery_charged) : "Free"), "Total: " + fmt(r.total),,
     "Delivery: " + r.delivery_date + (r.delivery_time ? " at " + r.delivery_time : ""),
     "Payment: " + r.payment, "Name: " + r.name, "Phone: " + r.phone, "Address: " + r.address,
     r.notes ? "Notes: " + r.notes : ""
