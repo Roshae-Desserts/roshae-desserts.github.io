@@ -116,7 +116,7 @@ $("list").addEventListener("click", async e => {
   try {
     if (b.dataset.act === "next") { await patch(id, { status: b.dataset.to }); render(); }
     else if (b.dataset.act === "cancel") { if (confirm("Cancel order " + o.order_no + "?")) { await patch(id, { status: "cancelled" }); render(); } }
-    else if (b.dataset.act === "copy") { await navigator.clipboard.writeText(msg(o) + "\n\nPhone: " + o.phone);hone); b.textContent = "Copied"; }
+    else if (b.dataset.act === "copy") { await navigator.clipboard.writeText(msg(o) + "\n\nPhone: " + o.phone); b.textContent = "Copied"; }
   } catch (x) { alert(x.message); }
 });
 $("list").addEventListener("change", async e => {
