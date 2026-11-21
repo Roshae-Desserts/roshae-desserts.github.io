@@ -44,8 +44,24 @@ const items = o => (Array.isArray(o.items) && o.items.length ? o.items
   : [o.petite_qty && { size: "Petite", qty: o.petite_qty }, o.grande_qty && { size: "Grande", qty: o.grande_qty }].filter(Boolean))
   .map(i => i.qty + " × " + (i.product && i.product !== "Classic Tiramisu" ? i.product + " " : "") + i.size).join(", ");
 const wa = p => { let d = String(p || "").replace(/\D/g, ""); if (d.startsWith("0")) d = "92" + d.slice(1); return d; };
-const msg = o => "Hi " + o.name + "! This is Roshae Desserts about your order " + o.order_no + ": " + items(o) + ", total " + fmt(o.total) +
-  ", delivery " + o.delivery_date + (o.delivery_time ? " at " + o.delivery_time : "") + ". Status: " + (STATUS[o.status] || o.status) + ".";
+const msg = o => {
+  const det = [
+    "Order: " + o.order_no,
+    "Items: " + items(o),
+    "Total: " + fmt(o.total) + (o.delivery_charged ? " (incl. " + fmt(o.delivery_charged) + " delivery)" : " (free delivery)"),
+    "Payment: " + o.payment,
+    "Delivery: " + o.delivery_date + (o.delivery_time ? " at " + String(o.delivery_time).slice(0, 5) : ""),
+    "Address: " + o.address
+  ].join("\n");
+  const body = {
+    new: ["Thank you for your order!", det, "Shall I confirm this order for you? Please reply YES to confirm."],
+    confirmed: ["Your order is confirmed!", det, "We'll message you when it's on its way."],
+    out_for_delivery: ["Your order is on its way to you now!", det],
+    delivered: ["Your order " + o.order_no + " has been delivered. We hope you enjoy it!"],
+    cancelled: ["Your order " + o.order_no + " has been cancelled. Message us if you'd like to reorder."]
+  }[o.status] || [det];
+  return ["Hi " + o.name + "! This is Roshae Desserts."].concat(body).join("\n\n");
+};
 
 // ---- render ----
 function card(o) {
@@ -100,7 +116,7 @@ $("list").addEventListener("click", async e => {
   try {
     if (b.dataset.act === "next") { await patch(id, { status: b.dataset.to }); render(); }
     else if (b.dataset.act === "cancel") { if (confirm("Cancel order " + o.order_no + "?")) { await patch(id, { status: "cancelled" }); render(); } }
-    else if (b.dataset.act === "copy") { await navigator.clipboard.writeText(msg(o) + "\n" + o.address + "\nPhone: " + o.phone); b.textContent = "Copied"; }
+    else if (b.dataset.act === "copy") { await navigator.clipboard.writeText(msg(o) + "\n\nPhone: " + o.phone);hone); b.textContent = "Copied"; }
   } catch (x) { alert(x.message); }
 });
 $("list").addEventListener("change", async e => {
